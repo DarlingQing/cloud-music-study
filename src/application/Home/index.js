@@ -6,14 +6,15 @@ import {
   Top,
   Tab,
   TabItem,
+  Buoy,
 } from './style';
 
 function Home(props) {
   const { route } = props;
-  console.log(route);
 
   return (
     <div>
+      <Buoy><Link to="/demo" className="Buoy">Demo</Link></Buoy>
       <Top>
         <span className="iconfont menu">&#xe65c;</span>
         <span className="title">WebApp</span>

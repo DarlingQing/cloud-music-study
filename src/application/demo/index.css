@@ -1,0 +1,28 @@
+.Demo {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: #fff;;
+}
+
+.DemoTab {
+  overflow: hidden;
+}
+
+.DemoTab .DemoTab-item {
+  margin: 10px 5px;
+}
+
+.DemoTab .DemoTab-item span {
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.UseMemoDemo {
+  margin-top: 10px;
+}

@@ -4,9 +4,11 @@ import React, {
   useEffect,
   useRef,
   useImperativeHandle,
+  useMemo,
 } from 'react';
 import PropTypes from "prop-types";
 import BScroll from "better-scroll";
+import { debounce } from "../../api/util";
 import "./index.css";
 
 // scroll组件在业务中会被经常取到原生DOM对象，函数式组件需要forwardRef进行包裹
@@ -26,11 +28,21 @@ const Scroll = forwardRef((props, ref) => {
     bounceTop,
     bounceBottom,
   } = props;
+
   const {
     onScroll,
     pullUp,
     pullDown,
   } = props;
+
+  const pullUpDebounce = useMemo(() => {
+    return debounce(pullUp, 300);
+  }, [pullUp]);
+
+  let pullDownDebounce = useMemo(() => {
+    return debounce(pullDown, 300);
+  }, [pullDown]);
+
 
 
   useEffect(() => {
@@ -45,8 +57,8 @@ const Scroll = forwardRef((props, ref) => {
       }
     });
     setBScroll(scroll);
+    // why 要加return
     return () => {
-      // why 要加return
       setBScroll(null);
     }
     // eslint-disable-next-line
@@ -58,6 +70,7 @@ const Scroll = forwardRef((props, ref) => {
     bScroll.on('scroll', (scroll) => {
       onScroll(scroll);
     })
+    // 会有bug，需要重新解绑，再绑定事件
     return () => {
       bScroll.off('scroll');
     }
@@ -67,28 +80,34 @@ const Scroll = forwardRef((props, ref) => {
   useEffect(() => {
     if (!bScroll || !pullUp) return;
     // 判断是否滑动到了底部
-    if (bScroll.y <= bScroll.maxScrollY + 100) {
-      pullUp();
+    const handlePullUp = (pos) => {
+      if (bScroll.y <= bScroll.maxScrollY + 100) {
+        // pullUp();
+        pullUpDebounce();
+      }
     }
+    bScroll.on('scrollEnd', handlePullUp);
     return () => {
-      bScroll.off('scrollEnd');
+      bScroll.off('scrollEnd', handlePullUp);
     };
-  }, [pullUp, bScroll]);
+  }, [pullUp, pullUpDebounce, bScroll]);
 
 
   // 进行下拉的判断，调用下拉刷新的函数
   useEffect(() => {
     if (!bScroll || !pullDown) return;
-    // 判断是否滑动到了底部
-    bScroll.on('touchEnd', (pos) => {
+
+    const handlePullSown = (pos) => {
       if (pos.y > 50) {
-        pullDown();
+        pullDownDebounce();
       }
-    })
+    }
+    // 判断是否滑动到了底部
+    bScroll.on('touchEnd', handlePullSown);
     return () => {
-      bScroll.off('touchEnd');
+      bScroll.off('touchEnd', handlePullSown);
     };
-  }, [pullDown, bScroll]);
+  }, [pullDown, pullDownDebounce, bScroll]);
 
 
 

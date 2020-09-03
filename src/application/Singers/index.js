@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { renderRoutes } from 'react-router-config';
 import { useDispatch, useSelector } from 'react-redux';
 import HorizontalItem from '../../baseUI/HorizontalItem';
 import Scroll from '../../baseUI/Scroll';
-// import Loading from '../../baseUI/Loading/index';
+import Loading from '../../baseUI/Loading/index';
 import { categoryTypes, alphaTypes } from '../../api/config';
 import { actions } from '../../store/reducers/singers';
 import './index.css';
@@ -25,10 +26,16 @@ function Singers(props) {
     pageCount: singers.pageCount,
   }));
 
-  console.log(111, enterLoading);
-
+  // 分类
   const [category, setCategory] = useState('');
+  // 首字母
   const [alpha, setAlpha] = useState('');
+
+
+  useEffect(() => {
+    dispatch(singersActions.getHotSingerList(0));
+  // eslint-disable-next-line
+  }, []);
 
   // 滑到最底部刷新部分的处理
   const pullUpRefreshDispatch = (category, alpha, hot, page) => {
@@ -54,7 +61,7 @@ function Singers(props) {
   const updateDispatch = (category, alpha) => {
     dispatch(singersActions.changePageCount(0));
     // TODO loading是不是可以不放在redux中
-    dispatch(singersActions.changeEnterLoadingAction(true));
+    dispatch(singersActions.changeEnterLoading(true));
     dispatch(singersActions.getSingerList(category, alpha, 0));
   };
 
@@ -64,7 +71,6 @@ function Singers(props) {
   };
 
   const handleUpdateAlpha = (val) => {
-    // console.log(222);
     setAlpha(val);
     updateDispatch(category, val);
   };
@@ -77,10 +83,10 @@ function Singers(props) {
     pullDownRefreshDispatch(category, alpha);
   }
 
-  useEffect(() => {
-    dispatch(singersActions.getHotSingerList(0));
-  // eslint-disable-next-line
-  }, []);
+  const enterDetail = (id) => {
+    console.log(111, id);
+    props.history.push(`/singers/${id}`);
+  };
 
   // 渲染函数，返回歌手列表
   const renderSingerList = () => {
@@ -89,7 +95,11 @@ function Singers(props) {
         {
           singerList && singerList.map((item, index) => {
             return (
-              <div className="Singers-list-item" key={`${item.accountId}${index}`}>
+              <div
+                onClick={() => enterDetail(item.id)}
+                key={`${item.accountId}${index}`}
+                className="Singers-list-item"
+              >
                 <div className="Singers-list-item-imgWrapper">
                   <img src={`${item.picUrl}?param=300x300`} width="100%" height="100%" alt="music"/>
                 </div>
@@ -117,7 +127,8 @@ function Singers(props) {
         >
           { renderSingerList() }
         </Scroll>
-        {/* <Loading show={enterLoading}></Loading> */}
+        { enterLoading ? <Loading /> : null }
+        { renderRoutes(props.route.routes) }
       </div>
     </div>
   )
